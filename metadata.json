@@ -1,0 +1,7 @@
+{
+  "name": "AI Food Finder",
+  "description": "An intelligent chatbot that helps you discover the best local restaurants using your location and real-time data from Google Maps, powered by Gemini.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
