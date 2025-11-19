@@ -7,6 +7,8 @@ export interface Restaurant {
   mapsLink: string;
   signatureDish?: string;
   reviews?: string[];
+  address?: string;
+  menuImage?: string;
 }
 
 export interface Message {

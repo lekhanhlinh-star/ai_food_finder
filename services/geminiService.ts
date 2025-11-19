@@ -17,6 +17,9 @@ Hãy tuân theo các nguyên tắc sau:
 
 **Tên Quán:** [Tên quán ăn]
 **Món:** [Loại món]
+**Địa chỉ:** [Địa chỉ quán ăn]
+**Link Google Maps:** [URL đầy đủ đến Google Maps của quán]
+**Ảnh menu:** [URL ảnh trực tiếp (nếu có, phải bắt đầu bằng http). Nếu không có, hãy ghi "Không có"]
 **Đánh giá:** [Số sao] sao
 **Món đặc sắc:** [Tên món ăn đặc sắc hoặc bán chạy nhất (nếu có)]
 **Giờ mở cửa:** [Giờ mở cửa]
@@ -62,6 +65,16 @@ function parseRestaurantText(text: string): Restaurant[] {
             
             if (trimmedLine.startsWith('**Món:**')) {
                 restaurant.cuisine = trimmedLine.replace('**Món:**', '').trim();
+            } else if (trimmedLine.startsWith('**Địa chỉ:**')) {
+                restaurant.address = trimmedLine.replace('**Địa chỉ:**', '').trim();
+            } else if (trimmedLine.startsWith('**Link Google Maps:**')) {
+                restaurant.mapsLink = trimmedLine.replace('**Link Google Maps:**', '').trim();
+            } else if (trimmedLine.startsWith('**Ảnh menu:**')) {
+                const imageUrl = trimmedLine.replace('**Ảnh menu:**', '').trim();
+                // Validate that the URL is a real link, not a placeholder text.
+                if (imageUrl && imageUrl.toLowerCase().startsWith('http')) {
+                    restaurant.menuImage = imageUrl;
+                }
             } else if (trimmedLine.startsWith('**Đánh giá:**')) {
                 restaurant.rating = trimmedLine.replace('**Đánh giá:**', '').trim();
             } else if (trimmedLine.startsWith('**Món đặc sắc:**')) {
@@ -80,16 +93,18 @@ function parseRestaurantText(text: string): Restaurant[] {
         });
         
         // Final check for required fields.
-        if (restaurant.name !== 'N/A' && restaurant.cuisine && restaurant.rating && restaurant.hours) {
+        if (restaurant.name !== 'N/A' && restaurant.cuisine && restaurant.rating && restaurant.hours && restaurant.address) {
             restaurants.push({
                 name: restaurant.name,
                 cuisine: restaurant.cuisine,
                 rating: restaurant.rating,
                 hours: restaurant.hours,
                 note: restaurant.note || '',
-                mapsLink: restaurant.mapsLink,
+                mapsLink: restaurant.mapsLink || '#',
                 signatureDish: restaurant.signatureDish,
                 reviews: restaurant.reviews,
+                address: restaurant.address,
+                menuImage: restaurant.menuImage,
             });
         }
     });
@@ -141,27 +156,7 @@ export const getFoodRecommendations = async (
         });
 
         const text = response.text;
-        const groundingChunks: GroundingChunk[] = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-        
-        let restaurants = parseRestaurantText(text);
-
-        if (restaurants.length > 0 && groundingChunks.length > 0) {
-            restaurants = restaurants.map(restaurant => {
-                const bestMatch = groundingChunks.find(chunk => {
-                    // FIX: The 'maps' property on `chunk` is optional, as is `title`. Added a guard to ensure `chunk.maps.title` exists before using it for matching.
-                    if (!chunk.maps?.title) return false;
-                    const chunkTitle = chunk.maps.title.toLowerCase();
-                    const restaurantName = restaurant.name.toLowerCase();
-                    return chunkTitle.includes(restaurantName) || restaurantName.includes(chunkTitle);
-                });
-                return {
-                    ...restaurant,
-                    // FIX: Since `maps` and `uri` are optional, use optional chaining (`?.`) and the nullish coalescing operator (`??`) 
-                    // to safely access the property and provide a fallback value if it's null or undefined.
-                    mapsLink: bestMatch?.maps?.uri ?? '#',
-                };
-            });
-        }
+        const restaurants = parseRestaurantText(text);
         
         return { text, restaurants };
 

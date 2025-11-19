@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Restaurant } from '../types';
-import { IconCuisine, IconHours, IconMaps, IconNote, IconSparkles, IconStar, IconReview, IconChevronDown } from './Icons';
+import { IconCuisine, IconHours, IconMaps, IconNote, IconSparkles, IconStar, IconReview, IconChevronDown, IconAddress } from './Icons';
 
 interface RestaurantCardProps {
     restaurant: Restaurant;
@@ -12,6 +12,13 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
 
     return (
         <div className="bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+            {restaurant.menuImage && (
+                <img 
+                    src={restaurant.menuImage} 
+                    alt={`Thực đơn của ${restaurant.name}`} 
+                    className="w-full h-48 object-cover" 
+                />
+            )}
             <div className="p-5">
                 <div className="flex justify-between items-start">
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">{restaurant.name}</h3>
@@ -34,6 +41,15 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
                         <span className="font-medium">Món ăn:</span>
                         <span className="ml-2">{restaurant.cuisine}</span>
                     </div>
+                    {restaurant.address && (
+                        <div className="flex items-start">
+                            <IconAddress className="w-5 h-5 mr-3 mt-1 text-red-400 flex-shrink-0" />
+                             <div>
+                                <span className="font-medium">Địa chỉ:</span>
+                                <p className="text-sm ml-2 inline">{restaurant.address}</p>
+                            </div>
+                        </div>
+                    )}
                      <div className="flex items-center">
                         <IconStar className="w-5 h-5 mr-3 text-yellow-400" />
                         <span className="font-medium">Đánh giá:</span>
